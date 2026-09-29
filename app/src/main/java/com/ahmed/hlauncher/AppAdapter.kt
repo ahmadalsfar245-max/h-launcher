@@ -142,7 +142,7 @@ class AppAdapter(
                     activityInfo.name
                 )
                 val launchIntent = Intent(launcherIntent).apply {
-                    component = component
+                    setComponent(component)
                     addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 }
 
@@ -156,8 +156,22 @@ class AppAdapter(
                 )
             }
             .sortedWith(
-                compareBy(String.CASE_INSENSITIVE_ORDER) { it.label }
-                    .thenBy { it.launchIntent.component?.packageName.orEmpty() }
+                Comparator<AppEntry> { first, second ->
+                    val labelComparison = first.label.compareTo(
+                        second.label,
+                        ignoreCase = true
+                    )
+
+                    if (labelComparison != 0) {
+                        labelComparison
+                    } else {
+                        first.launchIntent.component?.packageName.orEmpty()
+                            .compareTo(
+                                second.launchIntent.component?.packageName.orEmpty(),
+                                ignoreCase = true
+                            )
+                    }
+                }
             )
             .toList()
     }
